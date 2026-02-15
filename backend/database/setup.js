@@ -2,12 +2,12 @@ const { Client } = require('pg');
 require('dotenv').config();
 
 const createDatabase = async () => {
-  // Conectar a PostgreSQL como administrador
+  // Conectar a PostgreSQL con variables de entorno
   const adminClient = new Client({
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'scota2024',
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     database: 'postgres' // Base de datos por defecto para operaciones administrativas
   });
 
@@ -37,10 +37,10 @@ const createDatabase = async () => {
     await adminClient.end();
     
     const appClient = new Client({
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 5432,
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'scota2024',
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
       database: dbName
     });
 
