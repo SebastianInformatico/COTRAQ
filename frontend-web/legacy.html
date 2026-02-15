@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.C.O.T.A. - Sistema de Control Operativo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        body { background-color: #f5f5f5; margin: 0; font-family: 'Roboto', sans-serif; }
+        .brand-logo { font-size: 1.3rem !important; font-weight: 500; }
+        .card-panel { margin: 20px; padding: 30px; }
+        .stats-card { padding: 20px; text-align: center; margin: 10px; }
+        .metric { font-size: 2.5rem; font-weight: bold; color: #26a69a; }
+        .hidden { display: none !important; }
+        .nav-wrapper { 
+            background: linear-gradient(135deg, #26a69a 0%, #00695c 100%) !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+            padding: 0 20px !important;
+        }
+        .nav-wrapper ul li a {
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 15px !important;
+            border-radius: 6px !important;
+            margin: 0 5px !important;
+            transition: all 0.3s ease !important;
+            height: 48px !important;
+        }
+        .nav-wrapper ul li a:hover {
+            background-color: rgba(255,255,255,0.1) !important;
+            transform: translateY(-1px) !important;
+        }
+        .nav-wrapper ul li a i {
+            margin-right: 8px !important;
+            font-size: 1.1rem !important;
+        }
+        .highlight { background-color: #e8f5e8; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .status-online { color: #4caf50; }
+        .status-pending { color: #ff9800; }
+        .navbar-logo {
+            display: flex !important;
+            align-items: center !important;
+            font-size: 1.5rem !important;
+            font-weight: 500 !important;
+        }
+        .navbar-logo i {
+            margin-right: 10px !important;
+            font-size: 1.8rem !important;
+        }
+
+        /* Estilos mejorados para los elementos de navegación */
+        .nav-item {
+            display: flex !important;
+            align-items: center !important;
+            flex-direction: row !important;
+            padding: 8px 16px !important;
+            border-radius: 8px !important;
+            margin: 0 4px !important;
+            transition: all 0.3s ease !important;
+            text-decoration: none !important;
+            color: white !important;
+            min-height: 48px !important;
+            gap: 10px !important;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem !important;
+            min-width: 20px !important;
+        }
+
+        .nav-item span {
+            font-size: 0.95rem !important;
+            font-weight: 400 !important;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(244, 67, 54, 0.2) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="hidden" id="navbar">
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo navbar-logo">
+                <i class="material-icons">local_shipping</i>
+                S.C.O.T.A. - Control de Transporte Acuícola
+            </a>
+            <ul class="right">
+                <li>
+                    <a href="#" onclick="showPage('dashboard')" class="nav-item">
+                        <i class="material-icons">dashboard</i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('trips')" class="nav-item">
+                        <i class="material-icons">local_shipping</i>
+                        <span>Viajes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('vehicles')" class="nav-item">
+                        <i class="material-icons">local_shipping</i>
+                        <span>Camiones</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showPage('profile')" class="nav-item">
+                        <i class="material-icons">person</i>
+                        <span>Perfil</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="logout()" class="nav-item logout-btn">
+                        <i class="material-icons">exit_to_app</i>
+                        <span>Salir</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Login Page -->
+    <div id="loginPage">
+        <div class="container">
+            <div class="row">
+                <div class="col s12 m6 offset-m3 l4 offset-l4">
+                    <div class="card-panel z-depth-2" style="margin-top: 100px;">
+                        <h4 class="center-align teal-text">S.C.O.T.A.</h4>
+                        <p class="center-align grey-text">Sistema de Control Operativo para Transporte Acuícola</p>
+                        
+                        <div id="errorMsg" class="card-panel red lighten-4 red-text hidden">
+                            <i class="material-icons left">error</i>
+                            <span id="errorText">Error de autenticación</span>
+                        </div>
+                        
+                        <form id="loginForm">
+                            <div class="input-field">
+                                <input id="email" type="email" required>
+                                <label for="email">Email</label>
+                            </div>
+                            <div class="input-field">
+                                <input id="password" type="password" required>
+                                <label for="password">Contraseña</label>
+                            </div>
+                            <button class="btn waves-effect waves-light teal darken-1 btn-large btn-block" type="submit">
+                                <i class="material-icons left">login</i>Iniciar Sesión
+                            </button>
+                        </form>
+                        
+                        <div class="highlight" style="margin-top: 20px;">
+                            <p class="center-align"><strong>Usuario de Prueba:</strong></p>
+                            <p class="center-align">Email: <code>admin@cotraq.com</code></p>
+                            <p class="center-align">Contraseña: <code>admin123</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="hidden">
+        <div class="container">
+            <h4 class="teal-text">Dashboard Principal</h4>
+            <div class="row">
+                <div class="col s12 m6 l3">
+                    <div class="card-panel teal lighten-5 stats-card">
+                        <i class="material-icons medium teal-text">local_shipping</i>
+                        <div class="metric" id="active-trips">12</div>
+                        <p>Viajes Activos</p>
+                    </div>
+                </div>
+                <div class="col s12 m6 l3">
+                    <div class="card-panel orange lighten-5 stats-card">
+                        <i class="material-icons medium orange-text">local_shipping</i>
+                        <div class="metric" id="available-trucks">8</div>
+                        <p>Camiones Disponibles</p>
+                    </div>
+                </div>
+                <div class="col s12 m6 l3">
+                    <div class="card-panel purple lighten-5 stats-card">
+                        <i class="material-icons medium purple-text">assignment_turned_in</i>
+                        <div class="metric" id="daily-checklists">25</div>
+                        <p>Checklists Hoy</p>
+                    </div>
+                </div>
+                <div class="col s12 m6 l3">
+                    <div class="card-panel green lighten-5 stats-card">
+                        <i class="material-icons medium green-text">people</i>
+                        <div class="metric" id="active-drivers">6</div>
+                        <p>Conductores Activos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trips Page -->
+    <div id="tripsPage" class="hidden">
+        <div class="container">
+            <div class="row">
+                <div class="col s12">
+                    <h4 class="teal-text"><i class="material-icons left">local_shipping</i>Gestión de Viajes</h4>
+                </div>
+            </div>
+            
+            <!-- Resumen del día -->
+            <div class="row">
+                <div class="col s12 m3">
+                    <div class="card blue lighten-4">
+                        <div class="card-content center-align">
+                            <i class="material-icons large blue-text">schedule</i>
+                            <h5>12</h5>
+                            <p>Viajes Programados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m3">
+                    <div class="card green lighten-4">
+                        <div class="card-content center-align">
+                            <i class="material-icons large green-text">check_circle</i>
+                            <h5>8</h5>
+                            <p>Completados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m3">
+                    <div class="card orange lighten-4">
+                        <div class="card-content center-align">
+                            <i class="material-icons large orange-text">autorenew</i>
+                            <h5>3</h5>
+                            <p>En Progreso</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m3">
+                    <div class="card red lighten-4">
+                        <div class="card-content center-align">
+                            <i class="material-icons large red-text">cancel</i>
+                            <h5>1</h5>
+                            <p>Cancelados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controles y filtros -->
+            <div class="row">
+                <div class="col s12">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">Filtros y Acciones</span>
+                            <div class="row">
+                                <div class="col s12 m4">
+                                    <a class="waves-effect waves-light btn modal-trigger teal" href="#modal-add-trip">
+                                        <i class="material-icons left">add</i>Nuevo Viaje
+                                    </a>
+                                </div>
+                                <div class="col s12 m4">
+                                    <div class="input-field">
+                                        <select id="filter-trip-status">
+                                            <option value="" selected>Todos los estados</option>
+                                            <option value="Programado">Programado</option>
+                                            <option value="En Progreso">En Progreso</option>
+                                            <option value="Completado">Completado</option>
+                                            <option value="Cancelado">Cancelado</option>
+                                        </select>
+                                        <label>Filtrar por Estado</label>
+                                    </div>
+                                </div>
+                                <div class="col s12 m4">
+                                    <div class="input-field">
+                                        <input type="date" id="filter-trip-date">
+                                        <label for="filter-trip-date">Filtrar por Fecha</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de viajes -->
+            <div class="row">
+                <div class="col s12">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">
+                                <i class="material-icons left">list</i>Viajes del Día - 13 de Febrero 2026
+                            </span>
+                            <table class="striped responsive-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID Viaje</th>
+                                        <th>Camión</th>
+                                        <th>Conductor</th>
+                                        <th>Origen</th>
+                                        <th>Destino</th>
+                                        <th>Hora Salida</th>
+                                        <th>Estado</th>
+                                        <th>Progreso</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>TRP-001</strong></td>
+                                        <td>CAM-002</td>
+                                        <td>María González</td>
+                                        <td>Puerto Montt</td>
+                                        <td>Santiago</td>
+                                        <td>08:00</td>
+                                        <td><span class="chip orange white-text">En Progreso</span></td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="determinate" style="width: 65%"></div>
+                                            </div>
+                                            <small>65% - Llegando a Temuco</small>
+                                        </td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Rastrear" onclick="trackTrip('TRP-001')">
+                                                <i class="material-icons">gps_fixed</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light green tooltipped" data-tooltip="Contactar" onclick="contactDriver('TRP-001')">
+                                                <i class="material-icons">phone</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light purple tooltipped" data-tooltip="Detalles" onclick="viewTripDetails('TRP-001')">
+                                                <i class="material-icons">info</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>TRP-002</strong></td>
+                                        <td>CAM-001</td>
+                                        <td>Juan Pérez</td>
+                                        <td>Castro</td>
+                                        <td>Puerto Montt</td>
+                                        <td>06:30</td>
+                                        <td><span class="chip green white-text">Completado</span></td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="determinate green" style="width: 100%"></div>
+                                            </div>
+                                            <small>100% - Llegó a destino 11:45</small>
+                                        </td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light purple tooltipped" data-tooltip="Detalles" onclick="viewTripDetails('TRP-002')">
+                                                <i class="material-icons">info</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Reporte" onclick="generateReport('TRP-002')">
+                                                <i class="material-icons">description</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>TRP-003</strong></td>
+                                        <td>CAM-003</td>
+                                        <td>Carlos López</td>
+                                        <td>Puerto Montt</td>
+                                        <td>Valparaíso</td>
+                                        <td>14:00</td>
+                                        <td><span class="chip blue white-text">Programado</span></td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="determinate grey" style="width: 0%"></div>
+                                            </div>
+                                            <small>Pendiente de salida</small>
+                                        </td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light green tooltipped" data-tooltip="Iniciar" onclick="startTrip('TRP-003')">
+                                                <i class="material-icons">play_arrow</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Editar" onclick="editTrip('TRP-003')">
+                                                <i class="material-icons">edit</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light red tooltipped" data-tooltip="Cancelar" onclick="cancelTrip('TRP-003')">
+                                                <i class="material-icons">cancel</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>TRP-004</strong></td>
+                                        <td>CAM-005</td>
+                                        <td>Roberto Silva</td>
+                                        <td>Concepción</td>
+                                        <td>Puerto Montt</td>
+                                        <td>16:30</td>
+                                        <td><span class="chip blue white-text">Programado</span></td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="determinate grey" style="width: 0%"></div>
+                                            </div>
+                                            <small>Pendiente de salida</small>
+                                        </td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light green tooltipped" data-tooltip="Iniciar" onclick="startTrip('TRP-004')">
+                                                <i class="material-icons">play_arrow</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Editar" onclick="editTrip('TRP-004')">
+                                                <i class="material-icons">edit</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light red tooltipped" data-tooltip="Cancelar" onclick="cancelTrip('TRP-004')">
+                                                <i class="material-icons">cancel</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mapa de viajes activos -->
+            <div class="row">
+                <div class="col s12">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">
+                                <i class="material-icons left">map</i>Viajes en Tiempo Real
+                            </span>
+                            <div style="height: 300px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed #90caf9;">
+                                <div style="text-align: center;">
+                                    <i class="material-icons large blue-text">map</i>
+                                    <h5 class="blue-text">Mapa Interactivo</h5>
+                                    <p class="grey-text">Vista de ubicación en tiempo real de todos los viajes activos<br>
+                                    (Integración con GPS pendiente)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicles Page -->
+    <div id="vehiclesPage" class="hidden">
+        <div class="container">
+            <div class="row">
+                <div class="col s12">
+                    <h4 class="teal-text"><i class="material-icons left">local_shipping</i>Control de Camiones</h4>
+                </div>
+            </div>
+            
+            <!-- Tarjetas de resumen -->
+            <div class="row">
+                <div class="col s12 m4">
+                    <div class="card green lighten-4">
+                        <div class="card-content center-align">
+                            <i class="material-icons large green-text">check_circle</i>
+                            <h5 id="available-trucks">5</h5>
+                            <p>Camiones Disponibles</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="card orange lighten-4">
+                        <div class="card-content center-align">
+                            <i class="material-icons large orange-text">schedule</i>
+                            <h5 id="enroute-trucks">3</h5>
+                            <p>En Ruta</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="card red lighten-4">
+                        <div class="card-content center-align">
+                            <i class="material-icons large red-text">build</i>
+                            <h5 id="maintenance-trucks">2</h5>
+                            <p>En Mantenimiento</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="row">
+                <div class="col s12">
+                    <a class="waves-effect waves-light btn modal-trigger teal" href="#modal-add-truck">
+                        <i class="material-icons left">add</i>Agregar Camión
+                    </a>
+                    <a class="waves-effect waves-light btn orange" onclick="exportTrucksData()">
+                        <i class="material-icons left">file_download</i>Exportar
+                    </a>
+                    <a class="waves-effect waves-light btn blue" onclick="refreshTrucksData()">
+                        <i class="material-icons left">refresh</i>Actualizar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tabla de camiones -->
+            <div class="row">
+                <div class="col s12">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">
+                                <i class="material-icons left">list</i>Flota de Camiones
+                                <a class="secondary-content">
+                                    <i class="material-icons teal-text">search</i>
+                                </a>
+                            </span>
+                            
+                            <!-- Barra de búsqueda -->
+                            <div class="row">
+                                <div class="input-field col s12 m6">
+                                    <input id="search-truck" type="text" onkeyup="filterTrucks()">
+                                    <label for="search-truck">Buscar por placa, modelo o conductor...</label>
+                                </div>
+                                <div class="input-field col s12 m3">
+                                    <select id="filter-status" onchange="filterTrucks()">
+                                        <option value="" selected>Todos los estados</option>
+                                        <option value="Disponible">Disponible</option>
+                                        <option value="En Viaje">En Viaje</option>
+                                        <option value="Mantenimiento">Mantenimiento</option>
+                                    </select>
+                                    <label>Filtrar por estado</label>
+                                </div>
+                            </div>
+
+                            <table class="striped responsive-table">
+                                <thead>
+                                    <tr>
+                                        <th>Placa</th>
+                                        <th>Modelo</th>
+                                        <th>Capacidad</th>
+                                        <th>Conductor</th>
+                                        <th>Estado</th>
+                                        <th>Ubicación</th>
+                                        <th>Último Viaje</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trucks-table-body">
+                                    <tr data-status="Disponible">
+                                        <td><strong>CAM-001</strong></td>
+                                        <td>Mercedes Actros 2546</td>
+                                        <td>25 toneladas</td>
+                                        <td>Juan Pérez Silva</td>
+                                        <td><span class="chip green white-text">Disponible</span></td>
+                                        <td>Base Puerto Montt</td>
+                                        <td>12/02/2026</td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Editar" onclick="editTruck('CAM-001')">
+                                                <i class="material-icons">edit</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light orange tooltipped" data-tooltip="Asignar viaje" onclick="assignTrip('CAM-001')">
+                                                <i class="material-icons">assignment</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light purple tooltipped" data-tooltip="Historial" onclick="viewHistory('CAM-001')">
+                                                <i class="material-icons">history</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr data-status="En Viaje">
+                                        <td><strong>CAM-002</strong></td>
+                                        <td>Volvo FH16 750</td>
+                                        <td>30 toneladas</td>
+                                        <td>María González López</td>
+                                        <td><span class="chip orange white-text">En Viaje</span></td>
+                                        <td>Ruta a Santiago</td>
+                                        <td>13/02/2026</td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Rastrear" onclick="trackTruck('CAM-002')">
+                                                <i class="material-icons">gps_fixed</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light green tooltipped" data-tooltip="Contactar" onclick="contactDriver('CAM-002')">
+                                                <i class="material-icons">phone</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light purple tooltipped" data-tooltip="Historial" onclick="viewHistory('CAM-002')">
+                                                <i class="material-icons">history</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr data-status="Disponible">
+                                        <td><strong>CAM-003</strong></td>
+                                        <td>Scania R450</td>
+                                        <td>28 toneladas</td>
+                                        <td>Carlos López Mendoza</td>
+                                        <td><span class="chip green white-text">Disponible</span></td>
+                                        <td>Base Puerto Montt</td>
+                                        <td>11/02/2026</td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Editar" onclick="editTruck('CAM-003')">
+                                                <i class="material-icons">edit</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light orange tooltipped" data-tooltip="Asignar viaje" onclick="assignTrip('CAM-003')">
+                                                <i class="material-icons">assignment</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light purple tooltipped" data-tooltip="Historial" onclick="viewHistory('CAM-003')">
+                                                <i class="material-icons">history</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr data-status="Mantenimiento">
+                                        <td><strong>CAM-004</strong></td>
+                                        <td>Iveco Stralis</td>
+                                        <td>26 toneladas</td>
+                                        <td>Ana Martínez Torres</td>
+                                        <td><span class="chip red white-text">Mantenimiento</span></td>
+                                        <td>Taller Mecánico</td>
+                                        <td>09/02/2026</td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Ver detalles" onclick="viewMaintenance('CAM-004')">
+                                                <i class="material-icons">build</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light green tooltipped" data-tooltip="Programar servicio" onclick="scheduleMaintenance('CAM-004')">
+                                                <i class="material-icons">event</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light purple tooltipped" data-tooltip="Historial" onclick="viewHistory('CAM-004')">
+                                                <i class="material-icons">history</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr data-status="Disponible">
+                                        <td><strong>CAM-005</strong></td>
+                                        <td>MAN TGX 26.480</td>
+                                        <td>26 toneladas</td>
+                                        <td>Roberto Silva Vega</td>
+                                        <td><span class="chip green white-text">Disponible</span></td>
+                                        <td>Base Puerto Montt</td>
+                                        <td>10/02/2026</td>
+                                        <td>
+                                            <a class="btn-small waves-effect waves-light blue tooltipped" data-tooltip="Editar" onclick="editTruck('CAM-005')">
+                                                <i class="material-icons">edit</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light orange tooltipped" data-tooltip="Asignar viaje" onclick="assignTrip('CAM-005')">
+                                                <i class="material-icons">assignment</i>
+                                            </a>
+                                            <a class="btn-small waves-effect waves-light purple tooltipped" data-tooltip="Historial" onclick="viewHistory('CAM-005')">
+                                                <i class="material-icons">history</i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="profilePage" class="hidden">
+        <div class="container">
+            <h4 class="teal-text">Perfil de Usuario</h4>
+            <div class="card-panel">
+                <div class="row">
+                    <div class="col s12 m4">
+                        <div class="center-align">
+                            <i class="material-icons large teal-text">account_circle</i>
+                            <h5 id="userName">Administrador</h5>
+                        </div>
+                    </div>
+                    <div class="col s12 m8">
+                        <h5>Información Personal</h5>
+                        <p><strong>Email:</strong> <span id="userEmail">admin@cotraq.com</span></p>
+                        <p><strong>Rol:</strong> <span id="userRole">Administrador</span></p>
+                        <p><strong>Última conexión:</strong> <span id="lastLogin">Hoy, 10:15 AM</span></p>
+                        <a class="waves-effect waves-light btn blue"><i class="material-icons left">edit</i>Editar Perfil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar nuevo camión -->
+    <div id="modal-add-truck" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <h4><i class="material-icons left">add</i>Agregar Nuevo Camión</h4>
+            <div class="row">
+                <form class="col s12" id="add-truck-form">
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <input id="truck-plate" type="text" class="validate" required>
+                            <label for="truck-plate">Placa del Camión</label>
+                        </div>
+                        <div class="input-field col s6">
+                            <input id="truck-model" type="text" class="validate" required>
+                            <label for="truck-model">Modelo</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <input id="truck-capacity" type="number" class="validate" required>
+                            <label for="truck-capacity">Capacidad (toneladas)</label>
+                        </div>
+                        <div class="input-field col s6">
+                            <select id="truck-type" required>
+                                <option value="" disabled selected>Seleccione tipo</option>
+                                <option value="refrigerado">Refrigerado</option>
+                                <option value="seco">Carga Seca</option>
+                                <option value="tanque">Tanque</option>
+                                <option value="plataforma">Plataforma</option>
+                            </select>
+                            <label>Tipo de Camión</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <input id="truck-year" type="number" class="validate" required min="2000" max="2030">
+                            <label for="truck-year">Año</label>
+                        </div>
+                        <div class="input-field col s6">
+                            <input id="truck-driver" type="text" class="validate" required>
+                            <label for="truck-driver">Conductor Asignado</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="truck-notes" class="materialize-textarea"></textarea>
+                            <label for="truck-notes">Notas Adicionales</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancelar</a>
+            <a href="#!" class="waves-effect waves-green btn teal" onclick="saveTruck()">Guardar Camión</a>
+        </div>
+    </div>
+
+    <!-- Modal para nuevo viaje -->
+    <div id="modal-add-trip" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <h4><i class="material-icons left">add</i>Crear Nuevo Viaje</h4>
+            <div class="row">
+                <form class="col s12" id="add-trip-form">
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <input id="trip-origin" type="text" class="validate autocomplete" required>
+                            <label for="trip-origin">Ciudad de Origen</label>
+                        </div>
+                        <div class="input-field col s6">
+                            <input id="trip-destination" type="text" class="validate autocomplete" required>
+                            <label for="trip-destination">Ciudad de Destino</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <input id="trip-date" type="date" class="validate" required>
+                            <label for="trip-date">Fecha de Viaje</label>
+                        </div>
+                        <div class="input-field col s6">
+                            <input id="trip-time" type="time" class="validate" required>
+                            <label for="trip-time">Hora de Salida</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <select id="trip-truck" required>
+                                <option value="" disabled selected>Seleccione camión</option>
+                                <option value="CAM-001">CAM-001 - Mercedes Actros</option>
+                                <option value="CAM-003">CAM-003 - Scania R450</option>
+                                <option value="CAM-005">CAM-005 - MAN TGX</option>
+                            </select>
+                            <label>Camión Asignado</label>
+                        </div>
+                        <div class="input-field col s6">
+                            <input id="trip-cargo" type="text" class="validate" required>
+                            <label for="trip-cargo">Tipo de Carga</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <input id="trip-weight" type="number" class="validate" step="0.1">
+                            <label for="trip-weight">Peso de Carga (toneladas)</label>
+                        </div>
+                        <div class="input-field col s6">
+                            <input id="trip-distance" type="number" class="validate" step="0.1">
+                            <label for="trip-distance">Distancia (km)</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="trip-instructions" class="materialize-textarea"></textarea>
+                            <label for="trip-instructions">Instrucciones Especiales</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancelar</a>
+            <a href="#!" class="waves-effect waves-green btn teal" onclick="saveTrip()">Crear Viaje</a>
+        </div>
+    </div>
+
+    <!-- Modal para ver historial -->
+    <div id="modal-history" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <h4><i class="material-icons left">history</i>Historial del Camión</h4>
+            <div class="row">
+                <div class="col s12">
+                    <ul class="collection">
+                        <li class="collection-item">
+                            <div>Viaje a Santiago
+                                <a href="#!" class="secondary-content"><span class="badge green">Completado</span></a>
+                                <p>12/02/2026 - 850 km - Salmón fresco</p>
+                            </div>
+                        </li>
+                        <li class="collection-item">
+                            <div>Mantenimiento preventivo
+                                <a href="#!" class="secondary-content"><span class="badge blue">Servicio</span></a>
+                                <p>08/02/2026 - Cambio de aceite y filtros</p>
+                            </div>
+                        </li>
+                        <li class="collection-item">
+                            <div>Viaje a Valparaíso
+                                <a href="#!" class="secondary-content"><span class="badge green">Completado</span></a>
+                                <p>05/02/2026 - 720 km - Productos del mar</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Materialize components
+            M.AutoInit();
+
+            // Login form handler
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errorMsg = document.getElementById('errorMsg');
+                const errorText = document.getElementById('errorText');
+
+                if (email === 'admin@cotraq.com' && password === 'admin123') {
+                    // Successful login
+                    document.getElementById('loginPage').classList.add('hidden');
+                    document.getElementById('navbar').classList.remove('hidden');
+                    showPage('dashboard');
+                    
+                    // Update user info
+                    document.getElementById('userName').textContent = 'Administrador';
+                    document.getElementById('userEmail').textContent = email;
+                    document.getElementById('userRole').textContent = 'Administrador del Sistema';
+                } else {
+                    // Failed login
+                    errorText.textContent = 'Email o contraseña incorrectos';
+                    errorMsg.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        errorMsg.classList.add('hidden');
+                    }, 3000);
+                }
+            });
+        });
+
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = ['dashboardPage', 'tripsPage', 'vehiclesPage', 'profilePage'];
+            pages.forEach(page => {
+                document.getElementById(page).classList.add('hidden');
+            });
+
+            // Show selected page
+            document.getElementById(pageId + 'Page').classList.remove('hidden');
+        }
+
+        function logout() {
+            document.getElementById('navbar').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            
+            // Hide all pages
+            const pages = ['dashboardPage', 'tripsPage', 'vehiclesPage', 'profilePage'];
+            pages.forEach(page => {
+                document.getElementById(page).classList.add('hidden');
+            });
+
+            // Reset form
+            document.getElementById('loginForm').reset();
+            
+            // Show logout message
+            M.toast({html: 'Sesión cerrada correctamente', classes: 'green'});
+        }
+
+        // Funciones para camiones
+        function filterTrucks() {
+            const searchText = document.getElementById('search-truck').value.toLowerCase();
+            const statusFilter = document.getElementById('filter-status').value;
+            const rows = document.querySelectorAll('#trucks-table-body tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const status = row.getAttribute('data-status');
+                const matchesSearch = text.includes(searchText);
+                const matchesStatus = statusFilter === '' || status === statusFilter;
+                
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function editTruck(plateId) {
+            M.toast({html: `Editando camión ${plateId}`, classes: 'blue'});
+            // Aquí se abriría un modal para editar
+        }
+
+        function assignTrip(plateId) {
+            M.toast({html: `Asignando viaje a camión ${plateId}`, classes: 'orange'});
+            // Aquí se abriría un modal para asignar viaje
+        }
+
+        function viewHistory(plateId) {
+            M.toast({html: `Viendo historial de ${plateId}`, classes: 'purple'});
+            // Aquí se abriría un modal con el historial
+        }
+
+        function trackTruck(plateId) {
+            M.toast({html: `Rastreando camión ${plateId}`, classes: 'blue'});
+            // Aquí se abriría un modal con GPS
+        }
+
+        function contactDriver(plateId) {
+            M.toast({html: `Contactando conductor de ${plateId}`, classes: 'green'});
+            // Aquí se abriría un modal de contacto
+        }
+
+        function viewMaintenance(plateId) {
+            M.toast({html: `Viendo mantenimiento de ${plateId}`, classes: 'blue'});
+            // Aquí se abriría un modal de mantenimiento
+        }
+
+        function scheduleMaintenance(plateId) {
+            M.toast({html: `Programando mantenimiento para ${plateId}`, classes: 'green'});
+            // Aquí se abriría un modal de programación
+        }
+
+        function exportTrucksData() {
+            M.toast({html: 'Exportando datos de camiones...', classes: 'blue'});
+            // Aquí se exportarían los datos
+        }
+
+        function refreshTrucksData() {
+            M.toast({html: 'Actualizando datos...', classes: 'blue'});
+            // Aquí se refrescarían los datos
+        }
+
+        function createNewTrip() {
+            M.toast({html: 'Creando nuevo viaje...', classes: 'teal'});
+            // Aquí se abriría modal para nuevo viaje
+        }
+
+        function editTrip(tripId) {
+            M.toast({html: `Editando viaje ${tripId}`, classes: 'blue'});
+            // Aquí se abriría modal para editar viaje
+        }
+
+        function viewTripDetails(tripId) {
+            M.toast({html: `Viendo detalles del viaje ${tripId}`, classes: 'purple'});
+            // Aquí se abriría modal con detalles del viaje
+        }
+
+        function startTrip(tripId) {
+            M.toast({html: `Iniciando viaje ${tripId}`, classes: 'green'});
+            // Aquí se iniciaría el viaje
+        }
+
+        function cancelTrip(tripId) {
+            M.toast({html: `Cancelando viaje ${tripId}`, classes: 'red'});
+            // Aquí se cancelaría el viaje
+        }
+
+        // Funciones adicionales para viajes
+        function trackTrip(tripId) {
+            M.toast({html: `Rastreando viaje ${tripId}`, classes: 'blue'});
+            // Abrir modal de rastreo GPS
+        }
+
+        function generateReport(tripId) {
+            M.toast({html: `Generando reporte del viaje ${tripId}`, classes: 'blue'});
+            // Generar reporte PDF del viaje
+        }
+
+        function saveTruck() {
+            // Validar formulario
+            const form = document.getElementById('add-truck-form');
+            if (form.checkValidity()) {
+                M.toast({html: 'Camión guardado exitosamente', classes: 'green'});
+                // Aquí se guardaría en la base de datos
+                M.Modal.getInstance(document.getElementById('modal-add-truck')).close();
+                // Actualizar tabla
+                refreshTrucksData();
+            } else {
+                M.toast({html: 'Por favor complete todos los campos requeridos', classes: 'red'});
+            }
+        }
+
+        function saveTrip() {
+            // Validar formulario
+            const form = document.getElementById('add-trip-form');
+            if (form.checkValidity()) {
+                M.toast({html: 'Viaje creado exitosamente', classes: 'green'});
+                // Aquí se guardaría en la base de datos
+                M.Modal.getInstance(document.getElementById('modal-add-trip')).close();
+                // Actualizar tabla
+                location.reload();
+            } else {
+                M.toast({html: 'Por favor complete todos los campos requeridos', classes: 'red'});
+            }
+        }
+
+        // Función para actualizar estadísticas en tiempo real
+        function updateDashboardStats() {
+            // Simular datos dinámicos
+            const stats = {
+                activeTrips: Math.floor(Math.random() * 10) + 15,
+                availableTrucks: Math.floor(Math.random() * 5) + 5,
+                dailyChecklists: Math.floor(Math.random() * 10) + 20,
+                activeDrivers: Math.floor(Math.random() * 3) + 6
+            };
+
+            // Actualizar los valores en el dashboard si está visible
+            if (document.getElementById('dashboardPage').style.display !== 'none') {
+                const elements = {
+                    'active-trips': stats.activeTrips,
+                    'available-trucks': stats.availableTrucks,
+                    'daily-checklists': stats.dailyChecklists,
+                    'active-drivers': stats.activeDrivers
+                };
+
+                Object.keys(elements).forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        // Animación de actualización
+                        element.style.transform = 'scale(1.1)';
+                        element.style.transition = 'transform 0.3s ease';
+                        
+                        setTimeout(() => {
+                            element.textContent = elements[id];
+                            element.style.transform = 'scale(1)';
+                        }, 150);
+                    }
+                });
+            }
+        }
+
+        // Sistema de notificaciones simulado
+        function simulateNotifications() {
+            const notifications = [
+                {message: 'Camión CAM-002 llegó a Santiago', type: 'green'},
+                {message: 'Nuevo viaje programado TRP-005', type: 'blue'},
+                {message: 'Mantenimiento completado CAM-004', type: 'orange'},
+                {message: 'Conductor reportó entrega exitosa', type: 'green'},
+                {message: 'Retraso en viaje TRP-001 - 15 min', type: 'orange'}
+            ];
+
+            // Mostrar notificación aleatoria cada 45-90 segundos
+            function showRandomNotification() {
+                const notification = notifications[Math.floor(Math.random() * notifications.length)];
+                M.toast({
+                    html: `<i class="material-icons left">notifications</i>${notification.message}`,
+                    classes: notification.type,
+                    displayLength: 4000
+                });
+            }
+
+            // Ejecutar notificaciones periódicamente
+            setInterval(showRandomNotification, Math.random() * 45000 + 45000);
+        }
+
+        // Función para simular actividad en tiempo real
+        function simulateRealTimeActivity() {
+            // Actualizar progreso de viajes cada 10 segundos
+            const progressBars = document.querySelectorAll('.determinate');
+            progressBars.forEach(bar => {
+                if (bar.style.width && bar.style.width !== '100%' && bar.style.width !== '0%') {
+                    let currentWidth = parseInt(bar.style.width);
+                    if (currentWidth < 95) {
+                        currentWidth += Math.floor(Math.random() * 3) + 1;
+                        bar.style.width = Math.min(currentWidth, 100) + '%';
+                        
+                        // Actualizar texto de progreso
+                        const textElement = bar.parentElement.parentElement.querySelector('small');
+                        if (textElement && currentWidth < 100) {
+                            const locations = ['Temuco', 'Los Ángeles', 'Chillán', 'San Fernando'];
+                            const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+                            textElement.textContent = `${currentWidth}% - Pasando por ${randomLocation}`;
+                        } else if (textElement && currentWidth >= 100) {
+                            textElement.textContent = '100% - Llegó a destino';
+                            bar.classList.remove('orange');
+                            bar.classList.add('green');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inicializar tooltips y modales después de que la página cargue
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar tooltips
+            var tooltips = document.querySelectorAll('.tooltipped');
+            M.Tooltip.init(tooltips);
+            
+            // Inicializar modales
+            var modals = document.querySelectorAll('.modal');
+            M.Modal.init(modals);
+            
+            // Inicializar selects
+            var selects = document.querySelectorAll('select');
+            M.FormSelect.init(selects);
+
+            // Actualizar estadísticas del dashboard cada 30 segundos
+            setInterval(updateDashboardStats, 30000);
+            
+            // Actualizar actividad en tiempo real cada 10 segundos
+            setInterval(simulateRealTimeActivity, 10000);
+            
+            // Iniciar sistema de notificaciones
+            setTimeout(simulateNotifications, 15000);
+            
+            // Actualizar estadísticas inmediatamente
+            updateDashboardStats();
+        });
+
+        // Show welcome message
+        setTimeout(() => {
+            M.toast({html: '¡Sistema S.C.O.T.A. iniciado correctamente!', classes: 'teal'});
+            M.toast({html: 'Todas las funcionalidades están disponibles', classes: 'blue'});
+            M.toast({html: 'Camiones cambiados de "Vehículos" exitosamente', classes: 'green'});
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.C.O.T.A. - Test de Integración</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1976d2;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        .run-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+        .run-button:hover {
+            background: #1565c0;
+        }
+        .run-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .status.running {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffb74d;
+        }
+        .status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #81c784;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef5350;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 S.C.O.T.A. - Test de Integración</h1>
+        
+        <div class="test-info">
+            <h3>🎯 Objetivo del Test</h3>
+            <p>Este test verifica que la integración entre el frontend y backend del sistema S.C.O.T.A. esté funcionando correctamente:</p>
+            <ul>
+                <li><strong>Conectividad:</strong> Health check del backend</li>
+                <li><strong>CORS:</strong> Configuración de Cross-Origin Resource Sharing</li>
+                <li><strong>Autenticación:</strong> Login con JWT tokens</li>
+                <li><strong>APIs:</strong> Acceso a endpoints protegidos</li>
+            </ul>
+        </div>
+
+        <button class="run-button" onclick="runTest()" id="runButton">
+            🚀 Ejecutar Test de Integración
+        </button>
+
+        <div id="status" style="display: none;"></div>
+        
+        <div class="console-output" id="console">
+            S.C.O.T.A. Integration Test Console
+            ===================================
+            Presiona el botón para iniciar las pruebas...
+        </div>
+    </div>
+
+    <script>
+        // Sobrescribir console.log para mostrar en la página
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleElement = document.getElementById('console');
+        
+        function appendToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'warn' ? '⚠️' : '📝';
+            consoleElement.textContent += `\n[${timestamp}] ${prefix} ${message}`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            
+            // También mostrar en consola del navegador
+            if (type === 'error') {
+                originalError(message);
+            } else {
+                originalLog(message);
+            }
+        }
+        
+        console.log = (message) => appendToConsole(message, 'log');
+        console.error = (message) => appendToConsole(message, 'error');
+        
+        function setStatus(message, type) {
+            const statusElement = document.getElementById('status');
+            statusElement.style.display = 'block';
+            statusElement.className = `status ${type}`;
+            statusElement.innerHTML = message;
+        }
+        
+        async function runTest() {
+            const runButton = document.getElementById('runButton');
+            runButton.disabled = true;
+            runButton.textContent = '🔄 Ejecutando...';
+            
+            consoleElement.textContent = 'S.C.O.T.A. Integration Test Console\n===================================';
+            setStatus('⏳ Ejecutando pruebas de integración...', 'running');
+            
+            try {
+                // Ejecutar el test usando el código del archivo integration-test.js
+                const result = await runIntegrationTests();
+                
+                if (result) {
+                    setStatus('✅ ¡Todas las pruebas pasaron! Integración funcionando correctamente.', 'success');
+                } else {
+                    setStatus('❌ Algunas pruebas fallaron. Revisa la consola para más detalles.', 'error');
+                }
+            } catch (error) {
+                setStatus('💥 Error inesperado durante las pruebas.', 'error');
+                console.error('Test error:', error);
+            } finally {
+                runButton.disabled = false;
+                runButton.textContent = '🔄 Ejecutar de Nuevo';
+            }
+        }
+        
+        // Código del test de integración
+        const API_BASE = 'http://localhost:3001/api';
+
+        // Función para hacer petitions con manejo de errores
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`${response.status}: ${data.error || data.message}`);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error(`❌ Error en ${endpoint}: ${error.message}`);
+                throw error;
+            }
+        }
+
+        // Test de conectividad básica
+        async function testHealthCheck() {
+            console.log('🔍 Probando health check...');
+            try {
+                const response = await fetch('http://localhost:3001/health');
+                const data = await response.json();
+                console.log('✅ Health check OK: ' + JSON.stringify(data, null, 2));
+                return true;
+            } catch (error) {
+                console.error('❌ Health check failed: ' + error.message);
+                return false;
+            }
+        }
+
+        // Test de autenticación
+        async function testAuthentication() {
+            console.log('🔍 Probando autenticación...');
+            try {
+                const loginData = {
+                    login: 'admin@cotraq.com',
+                    password: 'admin123'
+                };
+                
+                const result = await apiRequest('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify(loginData)
+                });
+                
+                console.log('✅ Login exitoso:');
+                console.log(`   Usuario: ${result.user?.first_name} ${result.user?.last_name}`);
+                console.log(`   Rol: ${result.user?.role}`);
+                console.log(`   Token: ${result.token?.substring(0, 50)}...`);
+                
+                return result.token;
+            } catch (error) {
+                console.error('❌ Login failed: ' + error.message);
+                return null;
+            }
+        }
+
+        // Test de endpoint protegido
+        async function testProtectedEndpoint(token) {
+            console.log('🔍 Probando endpoints protegidos...');
+            try {
+                // Probar obtener checklists
+                const checklists = await apiRequest('/checklists', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('✅ Checklists obtenidos:');
+                console.log(`   Cantidad: ${checklists.checklists?.length}`);
+                if (checklists.checklists?.length > 0) {
+                    console.log(`   Ejemplos: ${checklists.checklists.slice(0, 2).map(c => c.name).join(', ')}`);
+                }
+                
+                // Probar obtener usuarios
+                const users = await apiRequest('/users', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('✅ Usuarios obtenidos:');
+                console.log(`   Cantidad: ${users.users?.length}`);
+                if (users.users?.length > 0) {
+                    console.log(`   Ejemplos: ${users.users.slice(0, 2).map(u => `${u.first_name} ${u.last_name}`).join(', ')}`);
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Protected endpoints failed: ' + error.message);
+                return false;
+            }
+        }
+
+        // Test de CORS
+        async function testCORS() {
+            console.log('🔍 Probando configuración de CORS...');
+            try {
+                const response = await fetch('http://localhost:3001/health', {
+                    mode: 'cors'
+                });
+                console.log('✅ CORS configurado correctamente');
+                return true;
+            } catch (error) {
+                console.error('❌ CORS error: ' + error.message);
+                return false;
+            }
+        }
+
+        // Ejecutar todas las pruebas
+        async function runIntegrationTests() {
+            console.log('🚀 Iniciando pruebas de integración frontend-backend...');
+            console.log('');
+            
+            const results = {
+                health: false,
+                cors: false,
+                auth: false,
+                protected: false
+            };
+            
+            // Test 1: Health check
+            results.health = await testHealthCheck();
+            console.log('');
+            
+            // Test 2: CORS
+            results.cors = await testCORS();
+            console.log('');
+            
+            // Test 3: Autenticación
+            const token = await testAuthentication();
+            results.auth = !!token;
+            console.log('');
+            
+            // Test 4: Endpoints protegidos
+            if (token) {
+                results.protected = await testProtectedEndpoint(token);
+            }
+            console.log('');
+            
+            // Resumen
+            console.log('📊 RESUMEN DE PRUEBAS:');
+            console.log('==================================================');
+            console.log(`Health Check:        ${results.health ? '✅ PASS' : '❌ FAIL'}`);
+            console.log(`CORS Config:         ${results.cors ? '✅ PASS' : '❌ FAIL'}`);
+            console.log(`Autenticación:       ${results.auth ? '✅ PASS' : '❌ FAIL'}`);
+            console.log(`Endpoints Protegidos: ${results.protected ? '✅ PASS' : '❌ FAIL'}`);
+            console.log('==================================================');
+            
+            const allPassed = Object.values(results).every(result => result);
+            console.log('');
+            console.log(`🎯 RESULTADO GENERAL: ${allPassed ? '🟢 TODOS LOS TESTS PASARON' : '🔴 ALGUNOS TESTS FALLARON'}`);
+            
+            if (allPassed) {
+                console.log('');
+                console.log('🎉 ¡Integración frontend-backend funcionando correctamente!');
+                console.log('   - Backend API operativo en puerto 3001');
+                console.log('   - Frontend web operativo en puerto 3000');
+                console.log('   - Autenticación JWT funcionando');
+                console.log('   - Endpoints protegidos accesibles');
+                console.log('   - CORS configurado correctamente');
+            }
+            
+            return allPassed;
+        }
+    </script>
+</body>
+</html>
