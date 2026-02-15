@@ -34,7 +34,7 @@ module.exports = {
         id: adminId,
         username: 'admin',
         email: 'admin@cotraq.com',
-        password: await bcrypt.hash('admin123', 10),
+        password: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10),
         first_name: 'Administrador',
         last_name: 'Sistema',
         role: 'admin',

@@ -13,7 +13,7 @@ const LoginScreen = () => {
       // El backend espera 'login' como nombre de usuario. Aseguramos minúsculas y trim
       const cleanUsername = username.trim();
       const cleanPassword = password.trim();
-      console.log('Sending login:', cleanUsername, cleanPassword);
+      // console.log('Sending login:', cleanUsername); - Removed for security
       await authLogin({ login: cleanUsername, password: cleanPassword });
     } catch (e) {
       // Error is handled in store
