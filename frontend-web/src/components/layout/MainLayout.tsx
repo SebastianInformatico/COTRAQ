@@ -33,6 +33,8 @@ import {
   Logout,
   Settings,
   Notifications,
+  LocalGasStation as FuelIcon,
+  Timeline as TraceabilityIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
@@ -51,6 +53,8 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
   { text: 'Viajes', icon: <TripIcon />, path: '/trips' },
+  { text: 'Trazabilidad', icon: <TraceabilityIcon />, path: '/traceability' },
+  { text: 'Combustible', icon: <FuelIcon />, path: '/fuel' },
   { text: 'Checklists', icon: <ChecklistIcon />, path: '/checklists' },
   { text: 'Vehículos', icon: <VehicleIcon />, path: '/vehicles' },
   { text: 'Turnos', icon: <ShiftIcon />, path: '/shifts' },
