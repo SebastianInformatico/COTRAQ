@@ -342,11 +342,6 @@ router.get('/:id/stats', requireSameUserOrAdmin, async (req, res) => {
     }
 
     res.json(stats);
-      last_login: user.last_login,
-      // Agregar más estadísticas según sea necesario
-    };
-
-    res.json({ stats });
 
   } catch (error) {
     console.error('Error obteniendo estadísticas:', error);
