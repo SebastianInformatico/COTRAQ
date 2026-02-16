@@ -7,8 +7,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "setup-db": "node database/setup.js",
-    "migrate": "npx sequelize-cli db:migrate",
-    "seed": "npx sequelize-cli db:seed:all",
+    "migrate": "npx sequelize-cli db:migrate --config database/config.js --models-path src/models --migrations-path database/migrations --seeders-path database/seeds",
+    "seed": "npx sequelize-cli db:seed:all --config database/config.js --models-path src/models --migrations-path database/migrations --seeders-path database/seeds",
     "test": "jest",
     "build": "npm install"
   },
