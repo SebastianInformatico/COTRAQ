@@ -34,8 +34,8 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // Permitir el frontend configurado explícitamente
-    if (origin === process.env.FRONTEND_URL) {
+    // Permitir el frontend configurado explícitamente y dominios de vercel/railway
+    if (origin === process.env.FRONTEND_URL || origin.endsWith('.vercel.app') || origin.endsWith('.up.railway.app')) {
       return callback(null, true);
     }
     
