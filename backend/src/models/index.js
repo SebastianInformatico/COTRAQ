@@ -2,12 +2,19 @@ const { Sequelize } = require('sequelize');
 const config = require('../../database/config')[process.env.NODE_ENV || 'development'];
 
 // Inicializar Sequelize
-const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  config
-);
+let sequelize;
+if (config.use_env_variable) {
+  // En producción, usar DATABASE_URL directamente
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+} else {
+  // En desarrollo, usar credenciales individuales
+  sequelize = new Sequelize(
+    config.database,
+    config.username,
+    config.password,
+    config
+  );
+}
 
 // Importar modelos
 const User = require('./User')(sequelize, Sequelize.DataTypes);
